@@ -1,0 +1,5 @@
+.study/
+node_modules/
+.workbuddy/
+*.log
+.DS_Store

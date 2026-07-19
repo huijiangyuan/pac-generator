@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PAC 在线生成器 · 智能代理分流</title>
+  <meta name="description" content="在线生成 PAC 代理自动配置文件：自动跳过国内与私有 IP，国外流量走代理，支持多代理故障转移。" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <div class="logo">P</div>
+        <div>
+          <h1><span class="gradient-text">PAC</span> 在线生成器</h1>
+          <p>自动分流 · 国内/私有 IP 直连 · 国外走代理 · 多代理故障转移</p>
+        </div>
+      </div>
+      <div class="theme-switch" id="themeSwitch">
+        <button data-theme="light" title="浅色">☀ 浅色</button>
+        <button data-theme="system" title="跟随系统">◐ 系统</button>
+        <button data-theme="dark" title="深色">🌙 深色</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- 左列 -->
+      <div>
+        <div class="card">
+          <h2>① 代理服务器 <span class="tag">故障转移链</span></h2>
+          <p class="hint">按顺序填写你的代理。生成的 PAC 会让系统自动依次尝试，不可用时自动跳到下一个（即“自动轮询可用代理”）。</p>
+          <div id="proxyList"></div>
+          <div class="btn-row">
+            <button class="btn" id="addProxy">＋ 添加代理</button>
+            <button class="btn ghost" id="bulkBtn">⤓ 批量粘贴</button>
+          </div>
+          <div id="bulkBox" style="display:none; margin-top:12px;">
+            <label class="field">每行一个，支持 <code>socks5://127.0.0.1:1080</code> / <code>127.0.0.1:7890</code> / <code>https://1.2.3.4:8080</code></label>
+            <textarea id="bulkText" placeholder="socks5://127.0.0.1:1080&#10;http://192.168.1.1:7890"></textarea>
+            <div class="btn-row">
+              <button class="btn primary" id="bulkApply">解析并添加</button>
+              <button class="btn ghost" id="bulkCancel">取消</button>
+            </div>
+          </div>
+          <div class="toggle" style="margin-top:6px;">
+            <div>
+              <div class="t-label">全部代理不可用时直连</div>
+              <div class="t-desc">末尾追加 DIRECT 兜底，避免断网</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="fallbackDirect" checked /><span class="track"></span><span class="thumb"></span></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>② 路由规则</h2>
+          <p class="hint">基于 gfw-pac 改造：中国 IP 段（5823 条）走直连，私有/本地地址直连，其余国外流量走代理。</p>
+          <div class="toggle">
+            <div><div class="t-label">中国 IP 直连</div><div class="t-desc">命中国内 IP 段 → DIRECT</div></div>
+            <label class="switch"><input type="checkbox" id="chinaDirect" checked /><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="toggle">
+            <div><div class="t-label">私有 IP 直连</div><div class="t-desc">10/172.16-31/192.168/127/169.254 等</div></div>
+            <label class="switch"><input type="checkbox" id="privateDirect" checked /><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="toggle">
+            <div><div class="t-label">本地 / localhost 直连</div><div class="t-desc">纯主机名与 .test/.localhost</div></div>
+            <label class="switch"><input type="checkbox" id="localDirect" checked /><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="toggle">
+            <div><div class="t-label">国外 IP 走代理</div><div class="t-desc">未命中上述规则 → 代理链</div></div>
+            <label class="switch"><input type="checkbox" id="foreignProxy" checked /><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="toggle">
+            <div><div class="t-label">调试弹窗</div><div class="t-desc">每次请求弹窗显示命中规则（仅排查用）</div></div>
+            <label class="switch"><input type="checkbox" id="debug" /><span class="track"></span><span class="thumb"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右列 -->
+      <div>
+        <div class="card">
+          <h2>③ 自定义域名</h2>
+          <p class="hint">已预填常用直连/代理域名，可按需增删。每行一个，支持子域通配（如 <code>baidu.com</code> 同时匹配 <code>www.baidu.com</code>）。</p>
+          <label class="field">走代理的域名</label>
+          <textarea id="proxyDomains"></textarea>
+          <label class="field">直连的域名</label>
+          <textarea id="directDomains"></textarea>
+          <label class="field">本地 TLD（以 . 开头，每行一个）</label>
+          <textarea id="localTlds" style="min-height:60px;"></textarea>
+        </div>
+
+        <div class="card">
+          <h2>④ 中国 IP 列表</h2>
+          <p class="hint">内置 5823 条中国 IPv4/IPv6 段（来源 Loyalsoldier/geoip）。可选：填入远程列表 URL 即时更新。</p>
+          <div class="btn-row">
+            <button class="btn ghost" id="reloadCnBtn">↻ 从远程更新</button>
+            <input type="text" id="cnUrl" placeholder="https://.../cn.txt" style="flex:1; min-width:200px;" />
+          </div>
+          <p class="hint" id="cnStatus" style="margin-top:10px;"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 输出 -->
+    <div class="card" style="margin-top:20px;">
+      <div class="preview-head">
+        <div>
+          <h2>⑤ 生成的 PAC <span class="tag">实时</span></h2>
+          <p class="hint" style="margin:0;">编辑上方任意项即时刷新。下载 <code>pac.js</code> 后指向系统/浏览器代理即可。</p>
+        </div>
+      </div>
+      <div class="stats" id="stats"></div>
+      <pre class="code" id="preview"></pre>
+      <div class="btn-row">
+        <button class="btn primary" id="downloadBtn">⤓ 下载 pac.js</button>
+        <button class="btn" id="copyBtn">⧉ 复制全部</button>
+        <button class="btn ghost" id="copyProxyBtn">复制代理串</button>
+      </div>
+      <details class="usage">
+        <summary>如何使用生成的 PAC？</summary>
+        <ol>
+          <li>点击「下载 pac.js」，把文件保存到本地（如 <code>~/pac.js</code>）。</li>
+          <li><b>系统级</b>：macOS 系统设置 → 网络 → 代理 → 自动代理配置 → 填入 <code>file:///Users/你/pac.js</code>；Windows 设置 → 代理 → 使用设置脚本 → 同上。</li>
+          <li><b>浏览器</b>：Chrome/Edge 扩展（如 SwitchyOmega）选择「PAC 模式」并指向该文件；或浏览器设置中填写 PAC 地址。</li>
+          <li><b>想用在线地址</b>：把生成的 <code>pac.js</code> 提交到本仓库，访问 <code>https://&lt;用户名&gt;.github.io/&lt;仓库名&gt;/pac.js</code> 即可作为 PAC URL。</li>
+          <li>调试：打开「调试弹窗」开关重新下载，浏览器会为每个请求弹出命中规则，方便排查。</li>
+        </ol>
+      </details>
+    </div>
+
+    <div class="foot">
+      改造自 <a class="link" href="https://github.com/zhiyi7/gfw-pac" target="_blank" rel="noopener">gfw-pac</a> · 纯前端 · 数据全部本地生成，不上传任何信息
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="assets/cn-ip-list.js"></script>
+  <script src="assets/pac-template.js"></script>
+  <script src="assets/defaults.js"></script>
+  <script src="assets/generator.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
