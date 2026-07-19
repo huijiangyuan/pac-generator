@@ -16,6 +16,7 @@
 7. **实时预览 + 下载/复制**：编辑即时刷新 PAC 预览，一键下载 `pac.js` 或复制代理串；支持浅色/深色/系统主题。
 8. **代理链排序 = 本地优先 > 同网段优先 > 配置顺序**：`getProxy()` 始终把本机回环代理（`127.0.0.1`/`localhost`/`::1`）排最前（永远可达、延迟最低）；开启「自动优选」时，与当前网段相同的代理（家里 `192.168.31.x`、公司 `192.168.1.x`）次之；其余按填写顺序。纯 PAC 实现，无主动健康检查、无失败重试，结果一次性缓存复用。
 9. **代理填写更便捷 + 协议解释**：新增 Clash / V2RayN / Shadowsocks / sing-box **一键添加**按钮（自动填本机地址与默认端口，去重）、「清空」按钮；卡片内嵌「协议说明 & 工具对照」折叠面板，解释 HTTP/HTTPS/SOCKS4/SOCKS5 四种模式，并给出各常用软件推荐协议、默认端口与填写示例。
+10. **一键托管到 GitHub Gist（返回永久直链）**：输出卡片新增「🚀 一键托管」折叠区。用户填一次自己的 GitHub Token（gist 权限，仅存 localStorage，只发 api.github.com）即可把 pac.js 创建为私密 Gist 并返回直链；再次点击 PATCH 更新同一 Gist、URL 不变（去掉 raw_url 版本段实现稳定直链）。
 
 ## Plan A 关键说明
 - **原理**：`inSameLan(ip, ref)` 判断两 IPv4 是否同子网（10.x/8、172.16-31.x/16、192.168.x/24）；`getProxy()` 把同网段代理 `matched` 置前、其余 `rest` 置后拼成链，并追加 `DIRECT` 兜底。
@@ -38,6 +39,7 @@ assets/defaults.js      默认直连/代理域名清单
 - Node vm 桩件：14 项路由断言全部 PASS（直连/代理域名、私有 IP、中国 IP、国外 IP、四个开关）。
 - Node vm 桩件（Plan A）：6 场景验证全部 PASS——回家后家里代理置顶、回公司公司代理置顶、其他网段维持原序、关闭自动走静态链、国外域名命中置顶链、国内 IP 直连。另加 2 场景验证回环优先（127.0.0.1 永远最前，且独立于 autoNet 开关）。
 - jsdom UI 冒烟：初始渲染、Clash/V2Ray 一键添加（含去重）、清空、协议面板与对照表存在、无脚本错误，全部 PASS。
+- jsdom Gist 托管测试（桩 fetch）：无 Token 报错、Token 存档、首次 POST 创建私密 Gist、请求带 Bearer 与 pac.js 内容、返回稳定直链（去版本段）、gistId 记忆、再次点击 PATCH 同一 Gist 且 URL 不变，全部 PASS。
 - jsdom：UI 渲染、代理增删、开关切换、复制代理串正则均正常，无脚本错误。
 - 线上资源（index.html + 全部 assets）HTTP 200 可访问，已确认 `pac-template.js` 双反斜杠修复已上线。
 

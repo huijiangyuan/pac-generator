@@ -19,6 +19,18 @@
 
 详细步骤见站点内「如何使用生成的 PAC？」折叠区。
 
+## 一键托管到 GitHub Gist（返回永久直链）
+
+不想自己找空间托管？生成后点「🚀 一键托管到 GitHub Gist」即可：
+
+1. 在 [GitHub](https://github.com/settings/tokens) 生成一个 **Personal Access Token**，勾选 `gist` 权限（无需任何其他权限）。
+2. 把 Token 填进站点的 Token 框并点「保存」——**Token 仅存浏览器 localStorage，只发往 `api.github.com`，绝不上传别处**。
+3. 点「🚀 一键托管」：工具会把 `pac.js` 创建为一个**私密 Gist**，并返回一条直链 `https://gist.githubusercontent.com/<你>/<id>/raw/pac.js`。
+4. 把这条直链填进系统 / 浏览器的「自动代理配置 URL」（或 SwitchyOmega 的 PAC 模式）即可。
+5. **再次点击会更新同一个 Gist，直链 URL 保持不变**——以后改了代理规则，只要重新点一下托管，之前填的 URL 依然有效。
+
+> 说明：Gist 设为私密（不公开列出），但任何拿到直链的人都能访问，请勿把直链发给不信任的人。直链由 GitHub 的 `gist.githubusercontent.com` 提供，绝大多数系统/浏览器客户端可直接使用；个别严格客户端要求 `application/x-ns-proxy-autoconfig` 类型时，可改走 jsDelivr 等带正确 MIME 的 CDN。
+
 ## 代理填写：协议说明 & 常用工具对照
 
 ### 故障转移链的排序规则

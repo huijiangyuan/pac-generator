@@ -169,6 +169,24 @@
         <button class="btn" id="copyBtn">⧉ 复制全部</button>
         <button class="btn ghost" id="copyProxyBtn">复制代理串</button>
       </div>
+      <details class="usage gist-host">
+        <summary>🚀 一键托管到 GitHub Gist（返回永久直链）</summary>
+        <p class="hint">用你自己的 GitHub Token 把生成的 <code>pac.js</code> 创建为（私密）Gist，返回可直接填进系统/浏览器代理设置的直链。Token 仅存浏览器本地（localStorage），只发往 <code>api.github.com</code>，绝不上传别处。再次点击会更新<b>同一个</b> Gist，URL 保持不变。</p>
+        <label class="field">GitHub Personal Access Token（需 <code>gist</code> 权限）</label>
+        <div class="btn-row" style="margin-top:0;">
+          <input type="password" id="gistToken" placeholder="ghp_xxx 或 github_pat_xxx" style="flex:1; min-width:200px;" />
+          <button class="btn" id="gistSave">保存</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="gistHost">🚀 一键托管</button>
+          <button class="btn ghost" id="gistCopy" style="display:none;">复制直链</button>
+        </div>
+        <p class="hint" id="gistStatus" style="margin-top:10px;"></p>
+        <div id="gistUrlWrap" style="display:none;">
+          <label class="field">你的 PAC 直链（填到系统 / 浏览器代理设置，或与 SwitchyOmega 共用）</label>
+          <input type="text" id="gistUrl" readonly />
+        </div>
+      </details>
       <details class="usage">
         <summary>如何使用生成的 PAC？</summary>
         <ol>

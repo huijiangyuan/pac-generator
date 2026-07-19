@@ -253,6 +253,86 @@
     toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1900);
   }
 
+  // ---------- 一键托管到 GitHub Gist ----------
+  var GIST_TOKEN_KEY = 'pac-gist-token';
+  var GIST_ID_KEY = 'pac-gist-id';
+  var GIST_URL_KEY = 'pac-gist-url';
+  var gistTokenEl = document.getElementById('gistToken');
+  var gistId = localStorage.getItem(GIST_ID_KEY) || '';
+  gistTokenEl.value = localStorage.getItem(GIST_TOKEN_KEY) || '';
+  if (localStorage.getItem(GIST_URL_KEY)) {
+    document.getElementById('gistUrl').value = localStorage.getItem(GIST_URL_KEY);
+    document.getElementById('gistUrlWrap').style.display = 'block';
+    document.getElementById('gistCopy').style.display = '';
+    setGistStatus('已托管过，再次点击将更新同一 Gist（URL 不变）', false);
+  }
+  function setGistStatus(msg, isErr) {
+    var el = document.getElementById('gistStatus');
+    el.textContent = msg;
+    el.style.color = isErr ? 'var(--danger)' : 'var(--ok)';
+  }
+  document.getElementById('gistSave').addEventListener('click', function () {
+    var t = gistTokenEl.value.trim();
+    if (!t) { localStorage.removeItem(GIST_TOKEN_KEY); toast('已清除本地 Token'); return; }
+    localStorage.setItem(GIST_TOKEN_KEY, t);
+    toast('Token 已保存到本地');
+  });
+  document.getElementById('gistHost').addEventListener('click', function () {
+    var token = (gistTokenEl.value || localStorage.getItem(GIST_TOKEN_KEY) || '').trim();
+    if (!token) { setGistStatus('请先填写 GitHub Token 并点「保存」（需 gist 权限）', true); return; }
+    if (!lastPAC) { toast('暂无可托管内容'); return; }
+    var btn = document.getElementById('gistHost');
+    btn.disabled = true; setGistStatus('正在托管…', false);
+    var headers = {
+      'Authorization': 'Bearer ' + token,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    };
+    var url, body;
+    if (gistId) {
+      url = 'https://api.github.com/gists/' + gistId;
+      body = JSON.stringify({ files: { 'pac.js': { content: lastPAC } } });
+    } else {
+      url = 'https://api.github.com/gists';
+      body = JSON.stringify({
+        description: 'PAC 自动配置文件（由 PAC 在线生成器生成）',
+        public: false,
+        files: { 'pac.js': { content: lastPAC } }
+      });
+    }
+    fetch(url, { method: gistId ? 'PATCH' : 'POST', headers: headers, body: body })
+      .then(function (r) {
+        if (!r.ok) return r.json().then(function (e) { throw new Error((e && e.message) || ('HTTP ' + r.status)); });
+        return r.json();
+      })
+      .then(function (data) {
+        var raw = data.files && data.files['pac.js'] && data.files['pac.js'].raw_url;
+        // 去掉版本段，得到稳定直链（始终指向最新内容）
+        if (raw) raw = raw.replace(/\/raw\/[^/]+?\//, '/raw/');
+        gistId = data.id;
+        localStorage.setItem(GIST_ID_KEY, gistId);
+        if (raw) {
+          localStorage.setItem(GIST_URL_KEY, raw);
+          document.getElementById('gistUrl').value = raw;
+          document.getElementById('gistUrlWrap').style.display = 'block';
+          document.getElementById('gistCopy').style.display = '';
+        }
+        setGistStatus(gistId ? '✅ 已更新同一 Gist，直链保持不变' : '✅ 已创建 Gist，直链如下（再次点击会更新同一 Gist）', false);
+        toast('托管成功');
+      })
+      .catch(function (e) {
+        var msg = e.message || String(e);
+        if (/401/.test(msg)) msg = 'Token 无效或无 gist 权限，请重新生成（需勾选 gist 范围）';
+        else if (/403/.test(msg)) msg = '请求被拒（可能 Token 无 gist 权限或触发限流）';
+        else if (/Failed to fetch/.test(msg)) msg = '网络 / CORS 错误：请确认能访问 api.github.com';
+        setGistStatus('❌ ' + msg, true);
+      })
+      .finally(function () { btn.disabled = false; });
+  });
+  document.getElementById('gistCopy').addEventListener('click', function () {
+    copyText(document.getElementById('gistUrl').value, '已复制 PAC 直链');
+  });
+
   // ---------- 启动 ----------
   renderProxies();
   regenerate();

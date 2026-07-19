@@ -123,6 +123,7 @@ select { appearance: none; cursor: pointer;
 .btn:active { transform: translateY(0) scale(.98); }
 .btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); border-color: transparent; color: #fff; }
 .btn.ghost { background: transparent; }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
 .btn.block { width: 100%; }
 .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
 
