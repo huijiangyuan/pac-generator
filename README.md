@@ -1,5 +1,9 @@
 # PAC 在线生成器
 
+> 🌐 **在线使用（免安装，直接打开）**：**[https://huijiangyuan.github.io/pac-generator/](https://huijiangyuan.github.io/pac-generator/)**
+>
+> 纯前端工具，打开即用，所有生成都在浏览器本地完成，不上传任何信息。
+
 一个纯前端的 **PAC（Proxy Auto-Config）在线生成工具**，改造自 [gfw-pac](https://github.com/zhiyi7/gfw-pac)。
 
 特点：
@@ -12,10 +16,10 @@
 
 ## 使用
 
-1. 打开站点（GitHub Pages 或本地 `index.html`）。
+1. 打开在线站点：**[https://huijiangyuan.github.io/pac-generator/](https://huijiangyuan.github.io/pac-generator/)**（或本地双击 `index.html`）。
 2. 在「① 代理服务器」填写你的代理（支持 `socks5://127.0.0.1:1080`、`127.0.0.1:7890`、`https://1.2.3.4:8080` 批量粘贴）。
 3. 按需调整路由规则与自定义域名。
-4. 点击「下载 pac.js」，把文件指向系统/浏览器的自动代理配置。
+4. 点击「下载 pac.js」，把文件指向系统/浏览器的自动代理配置；或点「🚀 一键托管到 GitHub Gist」拿到永久直链。
 
 详细步骤见站点内「如何使用生成的 PAC？」折叠区。
 
@@ -23,11 +27,12 @@
 
 不想自己找空间托管？生成后点「🚀 一键托管到 GitHub Gist」即可：
 
-1. 在 [GitHub](https://github.com/settings/tokens) 生成一个 **Personal Access Token**，勾选 `gist` 权限（无需任何其他权限）。
-2. 把 Token 填进站点的 Token 框并点「保存」——**Token 仅存浏览器 localStorage，只发往 `api.github.com`，绝不上传别处**。
-3. 点「🚀 一键托管」：工具会把 `pac.js` 创建为一个**私密 Gist**，并返回一条直链 `https://gist.githubusercontent.com/<你>/<id>/raw/pac.js`。
-4. 把这条直链填进系统 / 浏览器的「自动代理配置 URL」（或 SwitchyOmega 的 PAC 模式）即可。
-5. **再次点击会更新同一个 Gist，直链 URL 保持不变**——以后改了代理规则，只要重新点一下托管，之前填的 URL 依然有效。
+1. 在 [GitHub Token 创建页](https://github.com/settings/tokens/new) 生成一个 **Personal Access Token (classic)** —— ⚠️ 必须是 **classic**，细粒度 Token 不支持 gist 权限，用了会 401 失败。
+2. Note 取个名、Expiration 选期限，**权限只勾 `gist` 一项**（托管 PAC 唯一需要的，别勾其他）。生成后立刻复制保存。
+3. 把 Token 填进站点的 Token 框并点「保存」——**Token 仅存浏览器 localStorage，只发往 `api.github.com`，绝不上传别处**；泄露后去 Tokens 页 Revoke 即可，已生成的直链不受影响。
+4. 点「🚀 一键托管」：工具会把 `pac.js` 创建为一个**私密 Gist**，并返回一条直链 `https://gist.githubusercontent.com/<你>/<id>/raw/pac.js`。
+5. 把这条直链填进系统 / 浏览器的「自动代理配置 URL」（或 SwitchyOmega 的 PAC 模式）即可。
+6. **再次点击会更新同一个 Gist，直链 URL 保持不变**——以后改了代理规则，只要重新点一下托管，之前填的 URL 依然有效。
 
 > 说明：Gist 设为私密（不公开列出），但任何拿到直链的人都能访问，请勿把直链发给不信任的人。直链由 GitHub 的 `gist.githubusercontent.com` 提供，绝大多数系统/浏览器客户端可直接使用；个别严格客户端要求 `application/x-ns-proxy-autoconfig` 类型时，可改走 jsDelivr 等带正确 MIME 的 CDN。
 
@@ -80,7 +85,9 @@
 
 ## 部署（GitHub Pages）
 
-仓库根目录即站点根目录，推送到 `main` 并在仓库 Settings → Pages 选择 `main` 分支 `/` 根目录即可。也可直接将本仓库内容托管到任意静态空间。
+本仓库已通过 GitHub Pages 部署，可直接访问：**[https://huijiangyuan.github.io/pac-generator/](https://huijiangyuan.github.io/pac-generator/)**
+
+如需自行部署：仓库根目录即站点根目录，推送到 `main` 并在仓库 Settings → Pages 选择 `main` 分支 `/` 根目录即可；也可直接将本仓库内容托管到任意静态空间（Vercel / Netlify / 对象存储等）。
 
 ## 数据更新
 
