@@ -177,6 +177,20 @@
           <input type="password" id="gistToken" placeholder="ghp_xxx 或 github_pat_xxx" style="flex:1; min-width:200px;" />
           <button class="btn" id="gistSave">保存</button>
         </div>
+        <details class="token-help">
+          <summary>👉 如何获取 GitHub Token？（点开看）</summary>
+          <ol class="steps">
+            <li>登录 GitHub → 右上角头像 → <b>Settings</b></li>
+            <li>左侧拉到底 → <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Tokens (classic)</b></li>
+            <li>点 <b>Generate new token (classic)</b>（⚠️ 必须是 <b>classic</b>，细粒度 Token 不支持 gist 权限，用了会 401 失败）</li>
+            <li>Note 取个名（如 <code>pac-generator</code>），Expiration 选期限（如 90 天，不建议 No expiration）</li>
+            <li><b>权限只勾 <code>gist</code> 这一项</b>（托管 PAC 唯一需要的，别勾其他）</li>
+            <li>拉到底点 <b>Generate token</b>，页面显示 <code>ghp_xxxxxxxx</code> → <b>立刻复制保存</b>（只显示这一次）</li>
+            <li>回到这里粘进输入框 → 点「保存」→ 再点「🚀 一键托管」</li>
+          </ol>
+          <p class="hint">直达创建页（需登录）：<a class="link" href="https://github.com/settings/tokens/new" target="_blank" rel="noopener">github.com/settings/tokens/new</a></p>
+          <p class="warn">⚠️ <b>安全提醒</b>：Token 只存你浏览器 localStorage，仅在你点托管时发往 <code>api.github.com</code>，不经过任何中间服务器。它有 <code>gist</code> 权限，别到处贴；万一泄露，去 Tokens 页面把对应项 <b>Revoke</b> 即可，已生成的 PAC 直链不受影响。不想用 Token 也可走「下载 pac.js → 丢到任意静态空间」。</p>
+        </details>
         <div class="btn-row">
           <button class="btn primary" id="gistHost">🚀 一键托管</button>
           <button class="btn ghost" id="gistCopy" style="display:none;">复制直链</button>
