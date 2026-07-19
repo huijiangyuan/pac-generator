@@ -33,19 +33,27 @@ function inSameLan(ip, ref) {
     return false;
 }
 
-// 动态构建代理链：开启自动优选时，把与本机同网段的代理排到最前（取一次结果缓存复用）
+// 判断是否为本机回环地址（localhost / 127.x / ::1）——这类代理永远可达、最优先
+function isLoopback(host) {
+    return host === 'localhost' || host === '::1' || /^127(\\.\\d{1,3}){3}$/.test(host);
+}
+
+// 动态构建代理链：
+//   1) 本机回环代理（127.x / localhost）永远排最前——永远可达、延迟最低；
+//   2) 开启自动优选时，与本机同网段的代理（如家里/公司 LAN）次之；
+//   3) 其余代理最后。结果缓存一次复用。
 function getProxy() {
-    if (!autoNet) return proxy;
     if (_proxyCache !== null) return _proxyCache;
     try {
-        var myIp = myIpAddress();
-        var matched = [], rest = [];
+        var myIp = autoNet ? myIpAddress() : null;
+        var local = [], matched = [], rest = [];
         for (var i = 0; i < proxyList.length; i++) {
             var p = proxyList[i];
-            if (isIpAddress(p.host) && inSameLan(myIp, p.host)) matched.push(p);
+            if (isLoopback(p.host)) local.push(p);
+            else if (autoNet && isIpAddress(p.host) && inSameLan(myIp, p.host)) matched.push(p);
             else rest.push(p);
         }
-        var ordered = matched.concat(rest);
+        var ordered = local.concat(matched, rest);
         var parts = [];
         for (var j = 0; j < ordered.length; j++) {
             var q = ordered[j];

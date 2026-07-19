@@ -43,6 +43,15 @@
               <button class="btn ghost" id="bulkCancel">取消</button>
             </div>
           </div>
+          <div class="quick-add">
+            <span class="qa-label">快速添加常用工具：</span>
+            <button class="chip" data-tool="clash">Clash</button>
+            <button class="chip" data-tool="v2ray">V2RayN</button>
+            <button class="chip" data-tool="ss">Shadowsocks</button>
+            <button class="chip" data-tool="singbox">sing-box</button>
+            <button class="chip ghost" id="clearProxy">清空</button>
+          </div>
+          <p class="hint local-note">💡 本机代理（<code>127.0.0.1</code> / <code>localhost</code>）会自动排到故障转移链<b>最前</b>；其余按你填写的顺序；开启「自动优选」时同网段代理（如家里/公司 LAN）次优先。</p>
           <div class="toggle" style="margin-top:6px;">
             <div>
               <div class="t-label">全部代理不可用时直连</div>
@@ -57,6 +66,41 @@
             </div>
             <label class="switch"><input type="checkbox" id="autoNet" checked /><span class="track"></span><span class="thumb"></span></label>
           </div>
+          <details class="usage proto">
+            <summary>📖 协议说明 &amp; 常用工具对照（HTTP / HTTPS / SOCKS4 / SOCKS5 怎么选？）</summary>
+            <div class="proto-cards">
+              <div class="proto-card">
+                <div class="pc-head"><span class="pc-name">HTTP</span><code>PROXY</code></div>
+                <p>最基础、兼容性最好。浏览器把请求交给代理代为访问，仅 TCP。绝大多数本地软件（Clash / V2Ray）都开放 HTTP 端口，PAC 里最常用。</p>
+              </div>
+              <div class="proto-card">
+                <div class="pc-head"><span class="pc-name">HTTPS</span><code>HTTPS</code></div>
+                <p>“CONNECT 隧道代理”。客户端先与代理建立 TLS 加密通道再传请求，代理看不到明文。本机 <code>127.x</code> 代理一般没必要用，多用于远端代理服务器。</p>
+              </div>
+              <div class="proto-card">
+                <div class="pc-head"><span class="pc-name">SOCKS4</span><code>SOCKS</code></div>
+                <p>古老协议：仅 IPv4、无认证、不支持 UDP，基本已被淘汰。除非老软件只支持它，否则不要用。</p>
+              </div>
+              <div class="proto-card">
+                <div class="pc-head"><span class="pc-name">SOCKS5</span><code>SOCKS5</code></div>
+                <p>现代 SOCKS：支持 IPv4/IPv6、UDP（游戏 / 视频通话 / QUIC 需要）、可选认证。本地软件几乎都优先提供 SOCKS5，最通用。</p>
+              </div>
+            </div>
+            <table class="proto-table">
+              <thead><tr><th>软件</th><th>推荐协议</th><th>常见端口</th><th>填写示例</th></tr></thead>
+              <tbody>
+                <tr><td>Clash / Clash Verge / mihomo</td><td>HTTP 或 SOCKS5</td><td>7890(HTTP) / 7891(SOCKS5)</td><td><code>127.0.0.1:7890</code> 选 http</td></tr>
+                <tr><td>V2Ray / V2RayN</td><td>SOCKS5 或 HTTP</td><td>10808(SOCKS5) / 10809(HTTP)</td><td><code>127.0.0.1:10808</code> 选 socks5</td></tr>
+                <tr><td>Shadowsocks (SS)</td><td>SOCKS5</td><td>1080</td><td><code>127.0.0.1:1080</code> 选 socks5</td></tr>
+                <tr><td>ShadowsocksR (SSR)</td><td>SOCKS5</td><td>1080</td><td><code>127.0.0.1:1080</code> 选 socks5</td></tr>
+                <tr><td>Trojan / Trojan-Go</td><td>SOCKS5 或 HTTP</td><td>通常 1080</td><td><code>127.0.0.1:1080</code> 选 socks5</td></tr>
+                <tr><td>sing-box</td><td>HTTP / SOCKS5 / mixed</td><td>20171(HTTP)/20172(SOCKS5)/20170(mixed)</td><td><code>127.0.0.1:20172</code> 选 socks5</td></tr>
+                <tr><td>ClashX (macOS)</td><td>HTTP</td><td>7890</td><td><code>127.0.0.1:7890</code> 选 http</td></tr>
+                <tr><td>NekoBox / Hiddify</td><td>SOCKS5 / mixed</td><td>2080 / mixed</td><td>看软件设置页端口</td></tr>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:10px;">注：<b>mixed 端口</b>同时接受 HTTP 与 SOCKS5，填哪种协议都行；端口以你软件「设置 / 端口」页显示为准。直接粘贴 <code>socks5://127.0.0.1:1080</code> 也能自动识别类型与端口。</p>
+          </details>
         </div>
 
         <div class="card">

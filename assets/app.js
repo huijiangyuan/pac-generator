@@ -96,6 +96,37 @@
     bulkBox.style.display = 'none';
   });
 
+  // 常用工具一键添加：避免手填协议/端口出错
+  var TOOL_PRESETS = {
+    clash:   { type: 'http',   host: '127.0.0.1', port: '7890' },
+    v2ray:   { type: 'socks5', host: '127.0.0.1', port: '10808' },
+    ss:      { type: 'socks5', host: '127.0.0.1', port: '1080' },
+    singbox: { type: 'socks5', host: '127.0.0.1', port: '20172' }
+  };
+  function hasProxy(p) {
+    return proxies.some(function (x) { return x.host === p.host && x.port === p.port; });
+  }
+  document.querySelectorAll('.chip[data-tool]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var preset = TOOL_PRESETS[btn.getAttribute('data-tool')];
+      if (!preset) return;
+      if (!hasProxy(preset)) {
+        proxies.push({ type: preset.type, host: preset.host, port: preset.port });
+        renderProxies();
+        regenerate();
+        toast('已添加 ' + preset.host + ':' + preset.port + ' (' + preset.type + ')');
+      } else {
+        toast('该代理已存在');
+      }
+    });
+  });
+  document.getElementById('clearProxy').addEventListener('click', function () {
+    proxies = [];
+    renderProxies();
+    regenerate();
+    toast('已清空代理列表');
+  });
+
   // ---------- 域名默认值 ----------
   document.getElementById('proxyDomains').value = (window.DEFAULT_PROXY_DOMAINS || []).join('\n');
   document.getElementById('directDomains').value = (window.DEFAULT_DIRECT_DOMAINS || []).join('\n');
