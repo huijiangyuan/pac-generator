@@ -8,6 +8,58 @@
 //   __DEBUG__         true/false 是否弹窗调试
 window.PAC_TEMPLATE = `var proxy = __PROXY__;
 
+var proxyList = __PROXIES__;
+
+var autoNet = __AUTO_NET__;
+
+var fallbackDirect = __FALLBACK_DIRECT__;
+
+var _proxyCache = null;
+
+var typeMap = { http: 'PROXY', https: 'HTTPS', socks4: 'SOCKS', socks5: 'SOCKS5' };
+
+// 判断两个 IPv4 是否处于同一局域子网（用于“按当前网络自动优选代理”）
+function inSameLan(ip, ref) {
+    if (!/^\\d{1,3}(\\.\\d{1,3}){3}$/.test(ip) || !/^\\d{1,3}(\\.\\d{1,3}){3}$/.test(ref)) return false;
+    var a = ip.split('.'), b = ref.split('.');
+    var pa = +a[0], pb = +b[0];
+    if (pa === 10 && pb === 10) return true;
+    if (pa === 172 && pb === 172) {
+        var xa = +a[1], xb = +b[1];
+        if (xa >= 16 && xa <= 31 && xb >= 16 && xb <= 31) return a[1] === b[1];
+        return false;
+    }
+    if (pa === 192 && a[1] === '168' && pb === 192 && b[1] === '168') return a[2] === b[2];
+    return false;
+}
+
+// 动态构建代理链：开启自动优选时，把与本机同网段的代理排到最前（取一次结果缓存复用）
+function getProxy() {
+    if (!autoNet) return proxy;
+    if (_proxyCache !== null) return _proxyCache;
+    try {
+        var myIp = myIpAddress();
+        var matched = [], rest = [];
+        for (var i = 0; i < proxyList.length; i++) {
+            var p = proxyList[i];
+            if (isIpAddress(p.host) && inSameLan(myIp, p.host)) matched.push(p);
+            else rest.push(p);
+        }
+        var ordered = matched.concat(rest);
+        var parts = [];
+        for (var j = 0; j < ordered.length; j++) {
+            var q = ordered[j];
+            var t = typeMap[q.type] || 'PROXY';
+            parts.push(t + ' ' + q.host + ':' + q.port);
+        }
+        if (fallbackDirect) parts.push('DIRECT');
+        _proxyCache = parts.join('; ');
+    } catch (e) {
+        _proxyCache = proxy;
+    }
+    return _proxyCache;
+}
+
 var direct = 'DIRECT';
 
 var directDomains = __DIRECT_DOMAINS__;
@@ -132,7 +184,7 @@ function FindProxyForURL(url, host) {
         return direct;
     } else if (isInProxyDomain(host)) {
         debug('命中代理域名', host, 'N/A');
-        return proxy;
+        return getProxy();
     } else if (__LOCAL_DIRECT__ && (isPlainHostName(host) || host === 'localhost' || isLocalTestDomain(host))) {
         debug('命中本地主机名或本地tld', host, 'N/A');
         return direct;
@@ -145,7 +197,7 @@ function FindProxyForURL(url, host) {
 
     if (!ip) {
         debug('无法解析 IP 地址', host, 'N/A');
-        return proxy;
+        return getProxy();
     } else if (__PRIVATE_DIRECT__ && isPrivateIp(ip)) {
         debug('域名解析后命中私有 IP 地址', host, ip);
         return direct;
@@ -155,7 +207,7 @@ function FindProxyForURL(url, host) {
     }
 
     debug('未命中任何规则', host, ip);
-    return __FOREIGN_PROXY__ ? proxy : direct;
+    return __FOREIGN_PROXY__ ? getProxy() : direct;
 }
 
 function debug(msg, host='', ip='') {

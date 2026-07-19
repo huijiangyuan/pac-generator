@@ -112,6 +112,7 @@
     var opts = {
       proxies: proxies,
       fallbackDirect: bool('fallbackDirect'),
+      autoNet: bool('autoNet'),
       directDomains: lines('directDomains'),
       proxyDomains: lines('proxyDomains'),
       localTlds: lines('localTlds'),
@@ -204,7 +205,7 @@
   });
 
   // 输入框变化时实时刷新
-  ['proxyDomains', 'directDomains', 'localTlds', 'fallbackDirect', 'chinaDirect',
+  ['proxyDomains', 'directDomains', 'localTlds', 'fallbackDirect', 'autoNet', 'chinaDirect',
    'privateDirect', 'localDirect', 'foreignProxy', 'debug'].forEach(function (id) {
     var el = document.getElementById(id);
     el.addEventListener('input', regenerate);

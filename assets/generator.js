@@ -125,10 +125,16 @@
     opts = opts || {};
     var proxyStr = buildProxyString(opts.proxies, opts.fallbackDirect !== false);
     var cidrsLiteral = buildCidrsLiteral(opts.cnList || (global.CN_IP_LIST || ''));
+    var proxiesArr = (opts.proxies || [])
+      .filter(function (p) { return p && p.host && p.port; })
+      .map(function (p) { return { type: p.type || 'http', host: p.host, port: p.port }; });
 
     var template = global.PAC_TEMPLATE || '';
     var map = {
       '__PROXY__': JSON.stringify(proxyStr),
+      '__PROXIES__': JSON.stringify(proxiesArr),
+      '__AUTO_NET__': opts.autoNet ? 'true' : 'false',
+      '__FALLBACK_DIRECT__': opts.fallbackDirect !== false ? 'true' : 'false',
       '__DOMAINS__': JSON.stringify(opts.proxyDomains || [], null, 0),
       '__DIRECT_DOMAINS__': JSON.stringify(opts.directDomains || [], null, 0),
       '__LOCAL_TLDS__': JSON.stringify(opts.localTlds || [], null, 0),
